@@ -269,6 +269,92 @@ EXEC usp_SubtractVacationHours @BusinessEntityID = 1, @HoursToSubtract = 19
 
 
 SELECT * FROM HumanResources.Employee
+---------------------------------------------------------------------------------------------------
+
+CREATE PROCEDURE usp_InsertDepartment
+	@Name NVARCHAR(50),
+	@GroupName NVARCHAR(50)
+AS
+BEGIN
+	SET NOCOUNT ON
+
+	IF @Name IS NULL OR @Name = ''
+	BEGIN
+		SELECT 'Name can not be NULL or Empty' AS Message
+		RETURN
+	END
+	IF @GroupName IS NULL OR @GroupName = ''
+	BEGIN
+		SELECT 'GroupName can not be NULL or Empty' AS Message
+		RETURN
+	END
+	IF EXISTS(SELECT 1 FROM HumanResources.Department WHERE [Name] = @Name OR GroupName = @GroupName)
+	BEGIN
+		SELECT 'Name or GroupName already exists' AS Message
+		RETURN
+	END
+
+	INSERT INTO HumanResources.Department (Name, GroupName, ModifiedDate)
+	VALUES (@Name, @GroupName, GETDATE())
+
+	SELECT DepartmentID,
+	Name,
+	GroupName,
+	ModifiedDate
+	FROM HumanResources.Department
+	WHERE [Name] = @Name 
+END
+
+EXEC usp_InsertDepartment @Name = 'Logistic', @GroupName = 'Freight'
+
+------------------------------------------------------------------------------------------
+
+CREATE FUNCTION DSFDS 
+(
+	@Num1 INT, 
+	@Num2 INT
+)
+RETURNS INT 
+AS
+BEGIN
+    DECLARE @Result INT
+    SET @Result = @Num1 + @Num2
+    RETURN @Result
+END
+
+-------------------------------------------------------------------------------------------------------
+CREATE ROLE role_reportReaders
+CREATE ROLE role_SalesEditors
+
+CREATE USER UserA WITHOUT LOGIN
+CREATE USER UserB WITHOUT LOGIN
+CREATE USER UserC WITHOUT LOGIN
+
+--Question 1
+GRANT SELECT ON Person.Person TO UserA
+
+--Question 2
+GRANT SELECT, INSERT ON Sales.Currency TO UserB
+
+--Question 3 
+DENY DELETE ON Sales.Currency TO UserB
+
+--Question 4
+REVOKE INSERT ON Sales.Currency TO UserB
+
+--Question 5
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
