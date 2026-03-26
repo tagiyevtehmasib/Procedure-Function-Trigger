@@ -226,10 +226,49 @@ BEGIN
 END
 
 EXEC usp_AddVacationHours @BusinessEntityID = 3, @HoursToAdd = 40
+
+-----------------------------------------------------------------------------------
+
+CREATE PROCEDURE usp_SubtractVacationHours
+	@BusinessEntityID INT,
+	@HoursToSubtract SMALLINT
+AS
+BEGIN 
+	SET NOCOUNT ON
+
+	IF NOT EXISTS(SELECT 1 FROM HumanResources.Employee WHERE BusinessEntityID=@BusinessEntityID)
+	BEGIN
+		SELECT 'There is not Employee' AS Message
+		RETURN
+	END
+
+	IF @HoursToSubtract <= 0
+	BEGIN
+		SELECT 'Value is entered mistake' AS Message
+		RETURN
+	END
+	IF(SELECT VacationHours FROM HumanResources.Employee WHERE BusinessEntityID = @BusinessEntityID) < @HoursToSubtract
+	BEGIN
+		SELECT 'Vac can not be more less than Hours' AS Message
+		RETURN
+	END
+	UPDATE HumanResources.Employee SET VacationHours = VacationHours - @HoursToSubtract,
+	ModifiedDate = GETDATE()
+	WHERE BusinessEntityID = @BusinessEntityID
+
+	SELECT BusinessEntityID,
+	JobTitle,
+	VacationHours,
+	ModifiedDate
+	FROM HumanResources.Employee
+	WHERE BusinessEntityID = @BusinessEntityID
+
+END
+
+EXEC usp_SubtractVacationHours @BusinessEntityID = 1, @HoursToSubtract = 19
+
+
 SELECT * FROM HumanResources.Employee
-
-
-
 
 
 
